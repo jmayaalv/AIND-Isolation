@@ -252,13 +252,15 @@ class CustomPlayer:
         else:
             # TODO Sort legal moves. How?
             for move in game.get_legal_moves(game.active_player):
-                if alpha < beta:
-                    score, _ = self.alphabeta(game.forecast_move(move), depth - 1, alpha, beta, not maximizing_player)
-                    best_score, best_move = reduce_fn((best_score, best_move), (score, move))
+                if alpha >= beta:
+                    break
 
-                    if maximizing_player:
-                        alpha = max(alpha, best_score)
-                    else:
-                        beta = min(beta, best_score)
+                score, _ = self.alphabeta(game.forecast_move(move), depth - 1, alpha, beta, not maximizing_player)
+                best_score, best_move = reduce_fn((best_score, best_move), (score, move))
+
+                if maximizing_player:
+                    alpha = max(alpha, best_score)
+                else:
+                    beta = min(beta, best_score)
 
         return best_score, best_move
