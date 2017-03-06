@@ -133,14 +133,15 @@ class CustomPlayer:
 
         best_move = legal_moves[random.randint(0, len(legal_moves) - 1)]
         best_score = float("-inf")
-        search_depth = self.search_depth or 1
-
+        search_fn = self.minimax if self.method == 'minimax' else self.alphabeta
+        depth = 1
         try:
+            while self.iterative:
+                score, move = search_fn(game, depth)
+                depth += 1
+                if (score, move) > (best_score, best_move):
+                    (best_score, best_move) = (score, move)
 
-            search_fn = self.minimax if self.method == 'minimax' else self.alphabeta
-            score, move = search_fn(game, search_depth)
-            if (score, move) > (best_score, best_move):
-                (best_score, best_move) = (score, move)
 
         except Timeout:
             # Handle any actions required at timeout, if necessary
@@ -245,6 +246,7 @@ class CustomPlayer:
         if depth == 0:
             return self.score(game, self), best_move
         else:
+            # TODO Sort legal moves. How?
             for move in game.get_legal_moves(game.active_player):
                 if alpha < beta:
                     score, _ = self.alphabeta(game.forecast_move(move), depth-1, alpha, beta, not maximizing_player)
@@ -256,12 +258,3 @@ class CustomPlayer:
                         beta = min(beta, best_score)
 
         return best_score, best_move
-
-        # if depth == 0:
-        #     return self.score(game, self), best_move
-        # else:
-        #     for move in game.get_legal_moves(game.active_player):
-        #         score, _ = self.minimax(game.forecast_move(move), depth - 1, not maximizing_player)
-        #         best_score, best_move = reduce_fn((best_score, best_move), (score, move))
-        #
-        # return best_score, best_move
