@@ -131,12 +131,16 @@ class CustomPlayer:
         # move from the game board (i.e., an opening book), or returning
         # immediately if there are no legal moves
 
+        legal_moves_count = len(legal_moves)
+        if legal_moves_count == 0:
+            return -1, -1
+
         best_move = legal_moves[random.randint(0, len(legal_moves) - 1)]
         best_score = float("-inf")
         search_fn = self.minimax if self.method == 'minimax' else self.alphabeta
         depth = 1
         try:
-            while self.iterative:
+            while self.iterative: # FIXME in case iterative is false. how?
                 score, move = search_fn(game, depth)
                 depth += 1
                 if (score, move) > (best_score, best_move):
@@ -249,7 +253,7 @@ class CustomPlayer:
             # TODO Sort legal moves. How?
             for move in game.get_legal_moves(game.active_player):
                 if alpha < beta:
-                    score, _ = self.alphabeta(game.forecast_move(move), depth-1, alpha, beta, not maximizing_player)
+                    score, _ = self.alphabeta(game.forecast_move(move), depth - 1, alpha, beta, not maximizing_player)
                     best_score, best_move = reduce_fn((best_score, best_move), (score, move))
 
                     if maximizing_player:
