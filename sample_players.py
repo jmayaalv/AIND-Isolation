@@ -56,7 +56,7 @@ def open_move_score(game, player):
         The heuristic value of the current game state
     """
     if game.is_loser(player):
-        return float("-inf")
+        return float("- inf")
 
     if game.is_winner(player):
         return float("inf")

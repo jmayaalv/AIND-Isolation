@@ -136,8 +136,9 @@ class CustomPlayer:
         search_depth = self.search_depth or 1
 
         try:
-            # TODO assuming minimax for the time being
-            score, move = self.minimax(game, search_depth, True)
+
+            search_fn = self.minimax if self.method == 'minimax' else self.alphabeta
+            score, move = search_fn(game, search_depth)
             if (score, move) > (best_score, best_move):
                 (best_score, best_move) = (score, move)
 
@@ -147,9 +148,6 @@ class CustomPlayer:
 
         # Return the best move from the last completed search iteration
         return best_move
-
-    def __make_node(self, score, move):
-        return score, move
 
     def minimax(self, game, depth, maximizing_player=True):
         """Implement the minimax search algorithm as described in the lectures.
@@ -183,7 +181,7 @@ class CustomPlayer:
                 evaluation function directly.
         """
 
-        best_score = float("-inf") if maximizing_player else float("-inf")
+        best_score = float("-inf") if maximizing_player else float("inf")
         best_move = (-1, -1)
         reduce_fn = max if maximizing_player else min
 
@@ -237,8 +235,33 @@ class CustomPlayer:
                 to pass the project unit tests; you cannot call any other
                 evaluation function directly.
         """
+        best_score = float("-inf") if maximizing_player else float("inf")
+        best_move = (-1, -1)
+        reduce_fn = max if maximizing_player else min
+
         if self.time_left() < self.TIMER_THRESHOLD:
             raise Timeout()
 
-        # TODO: finish this function!
-        raise NotImplementedError
+        if depth == 0:
+            return self.score(game, self), best_move
+        else:
+            for move in game.get_legal_moves(game.active_player):
+                if alpha < beta:
+                    score, _ = self.alphabeta(game.forecast_move(move), depth-1, alpha, beta, not maximizing_player)
+                    best_score, best_move = reduce_fn((best_score, best_move), (score, move))
+
+                    if maximizing_player:
+                        alpha = max(alpha, best_score)
+                    else:
+                        beta = min(beta, best_score)
+
+        return best_score, best_move
+
+        # if depth == 0:
+        #     return self.score(game, self), best_move
+        # else:
+        #     for move in game.get_legal_moves(game.active_player):
+        #         score, _ = self.minimax(game.forecast_move(move), depth - 1, not maximizing_player)
+        #         best_score, best_move = reduce_fn((best_score, best_move), (score, move))
+        #
+        # return best_score, best_move
