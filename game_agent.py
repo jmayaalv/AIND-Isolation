@@ -47,7 +47,7 @@ def custom_score(game, player):
 
     own_moves = len(game.get_legal_moves(player))
     opp_moves = len(game.get_legal_moves(game.get_opponent(player)))
-    return float(own_moves - opp_moves)
+    return float((own_moves * 8) - (opp_moves * 3))
 
 
 class CustomPlayer:
@@ -250,8 +250,6 @@ class CustomPlayer:
         if depth == 0:
             return self.score(game, self), best_move
         else:
-            # TODO Sort legal moves. How?
-
             sorted_legal_moves = sorted(game.get_legal_moves(game.active_player), reverse=True)
 
             for move in sorted_legal_moves:
