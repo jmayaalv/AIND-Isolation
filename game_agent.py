@@ -9,6 +9,9 @@ relative strength using tournament.py and include the results in your report.
 import logging
 import random
 
+own_weight = 1
+opp_weight = 2
+
 
 class Timeout(Exception):
     """Subclass base exception for code clarity."""
@@ -16,6 +19,37 @@ class Timeout(Exception):
 
 
 def heuristic_weighted_moves(game, player):
+    """Calculates the weighted difference between players moves. Described by the formula: p1_moves - (p2_moves * 2).
+     A bigger weight will cause the player to chase the opponent.
+
+      Parameters
+      ----------
+      game : `isolation.Board`
+          An instance of `isolation.Board` encoding the current state of the
+          game (e.g., player locations and blocked cells).
+
+      player : object
+          A player instance in the current game (i.e., an object corresponding to
+          one of the player objects `game.__player_1__` or `game.__player_2__`.)
+
+      Returns
+      -------
+      float
+          The heuristic value of the current game state to the specified player.
+      """
+    # active player moves
+    if game.is_loser(player):
+        return float("-inf")
+
+    if game.is_winner(player):
+        return float("inf")
+
+    own_moves = len(game.get_legal_moves(player))
+    opp_moves = len(game.get_legal_moves(game.get_opponent(player)))
+    return float(own_weight * own_moves - (opp_weight * opp_moves))
+
+
+def heuristic_weighted_moves_ratio(game, player):
     """Calculate the heuristic value of a game state from the point of view
       of the given player.
 
@@ -44,7 +78,47 @@ def heuristic_weighted_moves(game, player):
 
     own_moves = len(game.get_legal_moves(player))
     opp_moves = len(game.get_legal_moves(game.get_opponent(player)))
-    return float((own_moves * 8) - (opp_moves * 3))
+    try:
+        score = float((own_weight * own_moves) / (opp_weight * opp_moves))
+    except ZeroDivisionError:
+        score = float("inf")
+    return score
+
+
+def heuristic_weighted_moves_ratio_adjusted(game, player):
+    """Calculate the heuristic value of a game state from the point of view
+      of the given player.
+
+
+      Parameters
+      ----------
+      game : `isolation.Board`
+          An instance of `isolation.Board` encoding the current state of the
+          game (e.g., player locations and blocked cells).
+
+      player : object
+          A player instance in the current game (i.e., an object corresponding to
+          one of the player objects `game.__player_1__` or `game.__player_2__`.)
+
+      Returns
+      -------
+      float
+          The heuristic value of the current game state to the specified player.
+      """
+    # active player moves
+    if game.is_loser(player):
+        return float("-inf")
+
+    if game.is_winner(player):
+        return float("inf")
+
+    own_moves = len(game.get_legal_moves(player))
+    opp_moves = len(game.get_legal_moves(game.get_opponent(player)))
+    try:
+        score = float((own_weight * own_moves) * len(game.get_blank_spaces()) / (opp_weight * opp_moves))
+    except ZeroDivisionError:
+        score = float("inf")
+    return score
 
 
 # Set the heuristic function
@@ -128,10 +202,6 @@ class CustomPlayer:
 
         self.time_left = time_left
 
-        # Perform any required initializations, including selecting an initial
-        # move from the game board (i.e., an opening book), or returning
-        # immediately if there are no legal moves
-
         legal_moves_count = len(legal_moves)
         if legal_moves_count == 0:
             return -1, -1
@@ -141,7 +211,7 @@ class CustomPlayer:
         search_fn = self.minimax if self.method == 'minimax' else self.alphabeta
         depth = 1
         try:
-            while self.iterative:  # FIXME in case iterative is false. how?
+            while self.iterative:
                 score, move = search_fn(game, depth)
                 depth += 1
                 if (score, move) > (best_score, best_move):
